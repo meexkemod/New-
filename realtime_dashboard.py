@@ -1,22 +1,22 @@
 # realtime_dashboard.py
-# Streamlit untuk baca candlestick real-time dari file CSV
-
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import time
-import os
+import requests
 
 st.set_page_config(page_title="📊 Real-time Terminal MeexKemod", layout="wide")
-
 st.title("📈 Live Candlestick BTC/USDT")
 
-# Loop real-time update
 placeholder = st.empty()
 
+API_URL = "https://21db6963-dcd8-4b48-8f98-be314770a418-00-1747jbty2r5ej.pike.replit.dev/candles"
+
 while True:
-    if os.path.exists("candles.csv"):
-        df = pd.read_csv("candles.csv")
+    try:
+        response = requests.get(API_URL)
+        data = response.json()
+        df = pd.DataFrame(data)
         df["time"] = pd.to_datetime(df["time"])
 
         fig = go.Figure(data=[go.Candlestick(
@@ -32,7 +32,7 @@ while True:
             height=600
         )
         placeholder.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning("⏳ Menunggu data real-time dari Binance WebSocket...")
+    except Exception as e:
+        st.warning(f"⏳ Menunggu data real-time... ({e})")
 
-    time.sleep(5)  # update setiap 5 detik
+    time.sleep(5)
